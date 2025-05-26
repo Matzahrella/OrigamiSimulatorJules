@@ -197,7 +197,7 @@ function initImporter(globals){
             }
         } else {
             for (item of e.dataTransfer.files) {
-                openFile(item)
+                openFile(file)
                 break;
             }
         }

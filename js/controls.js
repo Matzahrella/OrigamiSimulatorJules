@@ -568,50 +568,20 @@ function initControls(globals){
     if (globals.colorMode == "axialStrain") $("#axialStrainMaterialOptions").show();
     else $("#axialStrainMaterialOptions").hide();
 
-    if (globals.colorMode == "customTexture") {
-        $("#customTextureOptions").show();
-    } else {
-        $("#customTextureOptions").hide();
-    }
-
-    globals.customTexture = null;
-
-    $("#textureFile").on('change', function(e) {
-        console.log("Texture file input changed");
-        var file = e.target.files[0];
-        if (file) {
-            console.log("File selected:", file.name);
-            if (file.type.startsWith('image/')) {
-                globals.model.loadTexture(file);
-                // Switch to custom texture mode if not already in it
-                if (globals.colorMode !== "customTexture") {
-                    setColorMode("customTexture");
-                }
-            } else {
-                globals.warn("Please select an image file (PNG, JPEG, etc.)");
-            }
-        }
-    });
-
     function setColorMode(val){
         globals.colorMode = val;
         if (val == "color") {
             $("#coloredMaterialOptions").show();
-            $("#axialStrainMaterialOptions").hide();
-            $("#customTextureOptions").hide();
-        } else if (val == "axialStrain") {
-            $("#coloredMaterialOptions").hide();
-            $("#axialStrainMaterialOptions").show();
-            $("#customTextureOptions").hide();
-        } else if (val == "customTexture") {
-            $("#coloredMaterialOptions").hide();
-            $("#axialStrainMaterialOptions").hide();
-            $("#customTextureOptions").show();
-        } else {
-            $("#coloredMaterialOptions").hide();
-            $("#axialStrainMaterialOptions").hide();
-            $("#customTextureOptions").hide();
+            $("#colorToggle>div").addClass("active");
+            $("#strainToggle>div").removeClass("active");
         }
+        else {
+            $("#coloredMaterialOptions").hide();
+            $("#colorToggle>div").removeClass("active");
+            $("#strainToggle>div").addClass("active");
+        }
+        if (val == "axialStrain") $("#axialStrainMaterialOptions").show();
+        else $("#axialStrainMaterialOptions").hide();
         $(".radio>input[value="+val+"]").prop("checked", true);
         globals.model.setMeshMaterial();
     }

@@ -31,8 +31,6 @@ function initModel(globals){
     clearGeometries();
     setMeshMaterial();
 
-    var currentTexture = null;
-
     function clearGeometries(){
 
         if (geometry) {
@@ -81,52 +79,22 @@ function initModel(globals){
 
     var inited = false;
 
-    function loadTexture(file) {
-        console.log("Model: Loading texture:", file.name); // Debug log
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            console.log("Model: FileReader loaded"); // Debug log
-            const textureLoader = new THREE.TextureLoader();
-            textureLoader.load(
-                e.target.result,
-                function(texture) {
-                    console.log("Model: Texture loaded successfully"); // Debug log
-                    currentTexture = texture;
-                    texture.wrapS = THREE.ClampToEdgeWrapping;
-                    texture.wrapT = THREE.ClampToEdgeWrapping;
-                    texture.minFilter = THREE.LinearFilter;
-                    console.log("Model: Updating material"); // Debug log
-                    setMeshMaterial();
-                },
-                undefined,
-                function(error) {
-                    console.error("Model: Error loading texture:", error); // Debug log
-                }
-            );
-        };
-        reader.onerror = function(error) {
-            console.error("Model: FileReader error:", error); // Debug log
-        };
-        reader.readAsDataURL(file);
-    }
-
     function setMeshMaterial() {
         var polygonOffset = 0.5;
         if (globals.colorMode == "normal") {
             material = new THREE.MeshNormalMaterial({
-                flatShading: true,
+                flatShading:true,
                 side: THREE.DoubleSide,
                 polygonOffset: true,
-                polygonOffsetFactor: polygonOffset,
+                polygonOffsetFactor: polygonOffset, // positive value pushes polygon further away
                 polygonOffsetUnits: 1
             });
             backside.visible = false;
-        } else if (globals.colorMode == "axialStrain") {
+        } else if (globals.colorMode == "axialStrain"){
             material = new THREE.MeshBasicMaterial({
-                vertexColors: THREE.VertexColors,
-                side: THREE.DoubleSide,
+                vertexColors: THREE.VertexColors, side:THREE.DoubleSide,
                 polygonOffset: true,
-                polygonOffsetFactor: polygonOffset,
+                polygonOffsetFactor: polygonOffset, // positive value pushes polygon further away
                 polygonOffsetUnits: 1
             });
             backside.visible = false;
@@ -134,32 +102,23 @@ function initModel(globals){
                 getSolver().render();
                 setGeoUpdates();
             }
-        } else if (globals.colorMode == "customTexture" && currentTexture) {
-            material = new THREE.MeshBasicMaterial({
-                map: currentTexture,
-                side: THREE.DoubleSide,
-                polygonOffset: true,
-                polygonOffsetFactor: polygonOffset,
-                polygonOffsetUnits: 1
-            });
-            backside.visible = false;
         } else {
             material = new THREE.MeshPhongMaterial({
-                flatShading: true,
-                side: THREE.FrontSide,
+                flatShading:true,
+                side:THREE.FrontSide,
                 polygonOffset: true,
-                polygonOffsetFactor: polygonOffset,
+                polygonOffsetFactor: polygonOffset, // positive value pushes polygon further away
                 polygonOffsetUnits: 1
             });
             material2 = new THREE.MeshPhongMaterial({
-                flatShading: true,
-                side: THREE.BackSide,
+                flatShading:true,
+                side:THREE.BackSide,
                 polygonOffset: true,
-                polygonOffsetFactor: polygonOffset,
+                polygonOffsetFactor: polygonOffset, // positive value pushes polygon further away
                 polygonOffsetUnits: 1
             });
-            material.color.setStyle("#" + globals.color1);
-            material2.color.setStyle("#" + globals.color2);
+            material.color.setStyle( "#" + globals.color1);
+            material2.color.setStyle( "#" + globals.color2);
             backside.visible = true;
         }
         frontside.material = material;
@@ -332,24 +291,11 @@ function initModel(globals){
         positions = new Float32Array(vertices.length*3);
         colors = new Float32Array(vertices.length*3);
         indices = new Uint16Array(faces.length*3);
-        var uvs = new Float32Array(vertices.length*2);  // Add UV array
-
-        // Calculate bounding box for UV mapping
-        var bbox = new THREE.Box3();
-        for (var i = 0; i < vertices.length; i++) {
-            bbox.expandByPoint(vertices[i]);
-        }
-        var size = bbox.getSize(new THREE.Vector3());
-        var maxSize = Math.max(size.x, size.y);
 
         for (var i=0;i<vertices.length;i++){
             positions[3*i] = vertices[i].x;
             positions[3*i+1] = vertices[i].y;
             positions[3*i+2] = vertices[i].z;
-            
-            // Calculate UV coordinates based on XY position
-            uvs[2*i] = (vertices[i].x - bbox.min.x) / maxSize;
-            uvs[2*i+1] = (vertices[i].y - bbox.min.y) / maxSize;
         }
         for (var i=0;i<faces.length;i++){
             var face = faces[i];
@@ -361,7 +307,6 @@ function initModel(globals){
         clearGeometries();
 
         var positionsAttribute = new THREE.BufferAttribute(positions, 3);
-        var uvAttribute = new THREE.BufferAttribute(uvs, 2);  // Create UV attribute
 
         var lineIndices = {
             U: [],
@@ -394,7 +339,6 @@ function initModel(globals){
 
         geometry.addAttribute('position', positionsAttribute);
         geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-        geometry.addAttribute('uv', uvAttribute);  // Add UV attribute to geometry
         geometry.setIndex(new THREE.BufferAttribute(indices, 1));
         // geometry.attributes.position.needsUpdate = true;
         // geometry.index.needsUpdate = true;
@@ -482,7 +426,6 @@ function initModel(globals){
         updateEdgeVisibility: updateEdgeVisibility,
         updateMeshVisibility: updateMeshVisibility,
 
-        getDimensions: getDimensions,//for save stl
-        loadTexture: loadTexture
+        getDimensions: getDimensions//for save stl
     }
 }
