@@ -11,7 +11,7 @@ function initGlobals(){
         scale: 1,
 
         //view
-        colorMode: "color",
+        colorMode: "color",// "color", "axialStrain", "faceStrain", "customTexture"
         calcFaceStrain: false,
         color1: "ec008b",
         color2: "dddddd",
@@ -23,6 +23,14 @@ function initGlobals(){
         boundaryEdgesVisible: true,
         meshVisible: true,
         ambientOcclusion: false,
+
+        //custom texture
+        customTexture: null,
+        customTextureScaleX: 1.0,
+        customTextureScaleY: 1.0,
+        customTextureOffsetX: 0.0,
+        customTextureOffsetY: 0.0,
+        customTextureObject: null,
 
         //flags
         simulationRunning: true,

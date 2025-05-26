@@ -81,6 +81,7 @@ function initModel(globals){
 
     function setMeshMaterial() {
         var polygonOffset = 0.5;
+        var material2 = null; // Initialize material2
         if (globals.colorMode == "normal") {
             material = new THREE.MeshNormalMaterial({
                 flatShading:true,
@@ -102,7 +103,28 @@ function initModel(globals){
                 getSolver().render();
                 setGeoUpdates();
             }
-        } else {
+        } else if (globals.colorMode == "customTexture") {
+            if (globals.customTextureObject) {
+                material = new THREE.MeshBasicMaterial({
+                    map: globals.customTextureObject,
+                    side: THREE.DoubleSide,
+                    polygonOffset: true,
+                    polygonOffsetFactor: polygonOffset,
+                    polygonOffsetUnits: 1
+                });
+            } else {
+                // Fallback to a default material if customTextureObject is null
+                material = new THREE.MeshPhongMaterial({
+                    flatShading: true,
+                    side: THREE.FrontSide, // Or THREE.DoubleSide if preferred for default
+                    color: new THREE.Color("#" + globals.color1), // Default color
+                    polygonOffset: true,
+                    polygonOffsetFactor: polygonOffset,
+                    polygonOffsetUnits: 1
+                });
+            }
+            backside.visible = false;
+        } else { // This is the default 'color' mode (original else block)
             material = new THREE.MeshPhongMaterial({
                 flatShading:true,
                 side:THREE.FrontSide,
@@ -122,7 +144,7 @@ function initModel(globals){
             backside.visible = true;
         }
         frontside.material = material;
-        backside.material = material2;
+        backside.material = material2; // material2 will be null if not in 'color' mode
     }
 
     function updateEdgeVisibility(){
@@ -243,6 +265,32 @@ function initModel(globals){
         creaseParams = nextCreaseParams;
         var _edges = fold.edges_vertices;
 
+        // UV Coordinates Generation based on original flat pattern
+        var original_vertices_for_uv = fold.vertices_coords;
+        var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (var i = 0; i < original_vertices_for_uv.length; i++) {
+            var x = original_vertices_for_uv[i][0];
+            var y = original_vertices_for_uv[i][1];
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+        }
+
+        var rangeX = maxX - minX;
+        var rangeY = maxY - minY;
+
+        // Avoid division by zero for degenerate cases
+        if (rangeX === 0) rangeX = 1;
+        if (rangeY === 0) rangeY = 1;
+
+        var uvs = new Float32Array(original_vertices_for_uv.length * 2);
+        for (var i = 0; i < original_vertices_for_uv.length; i++) {
+            uvs[i*2] = (original_vertices_for_uv[i][0] - minX) / rangeX;
+            uvs[i*2+1] = (original_vertices_for_uv[i][1] - minY) / rangeY;
+        }
+        // End UV Coordinates Generation
+
         var _vertices = [];
         for (var i=0;i<fold.vertices_coords.length;i++){
             var vertex = fold.vertices_coords[i];
@@ -339,6 +387,7 @@ function initModel(globals){
 
         geometry.addAttribute('position', positionsAttribute);
         geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.addAttribute('uv', new THREE.BufferAttribute(uvs, 2)); // Add UV attribute
         geometry.setIndex(new THREE.BufferAttribute(indices, 1));
         // geometry.attributes.position.needsUpdate = true;
         // geometry.index.needsUpdate = true;

@@ -567,6 +567,8 @@ function initControls(globals){
     else $("#coloredMaterialOptions").hide();
     if (globals.colorMode == "axialStrain") $("#axialStrainMaterialOptions").show();
     else $("#axialStrainMaterialOptions").hide();
+    if (globals.colorMode == "customTexture") $('#customTextureControls').show();
+    else $('#customTextureControls').hide();
 
     function setColorMode(val){
         globals.colorMode = val;
@@ -575,13 +577,26 @@ function initControls(globals){
             $("#colorToggle>div").addClass("active");
             $("#strainToggle>div").removeClass("active");
         }
-        else {
+        else { // Could be axialStrain or customTexture, or others in future
             $("#coloredMaterialOptions").hide();
-            $("#colorToggle>div").removeClass("active");
-            $("#strainToggle>div").addClass("active");
+            // Logic for specific active toggle (color vs strain)
+            if (val === "axialStrain") {
+                $("#colorToggle>div").removeClass("active");
+                $("#strainToggle>div").addClass("active");
+            } else if (val === "customTexture") {
+                // Potentially deactivate both color and strain, or have a dedicated toggle
+                // For now, let's assume it deactivates both if they are separate toggles
+                $("#colorToggle>div").removeClass("active");
+                $("#strainToggle>div").removeClass("active");
+            }
         }
+
         if (val == "axialStrain") $("#axialStrainMaterialOptions").show();
         else $("#axialStrainMaterialOptions").hide();
+
+        if (val == "customTexture") $('#customTextureControls').show();
+        else $('#customTextureControls').hide();
+
         $(".radio>input[value="+val+"]").prop("checked", true);
         globals.model.setMeshMaterial();
     }
@@ -728,6 +743,126 @@ function initControls(globals){
     setLink("#aboutUserInteraction", function(){
         $('#aboutUserInteractionModal').modal('show');
     });
+
+    // Initialize Custom Texture Control Values
+    $('#textureScaleX').val(globals.customTextureScaleX);
+    $('#textureScaleY').val(globals.customTextureScaleY);
+    $('#textureOffsetX').val(globals.customTextureOffsetX);
+    $('#textureOffsetY').val(globals.customTextureOffsetY);
+
+    // Event Handlers for Custom Texture Controls
+    $('#textureUpload').on('change', function(event) {
+        const file = event.target.files[0];
+        if (!file || !(file.type === "image/png" || file.type === "image/jpeg")) {
+            globals.warn("Please select a PNG or JPG image.");
+            // Reset file input to allow re-selection of the same file if needed
+            $(this).val('');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            new THREE.TextureLoader().load(e.target.result, function(texture) {
+                if (globals.customTextureObject) { // Dispose old texture if exists
+                    globals.customTextureObject.dispose();
+                }
+                globals.customTextureObject = texture;
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.center.set(0.5, 0.5); // Center for rotation if any, though not used yet
+                texture.repeat.set(globals.customTextureScaleX, globals.customTextureScaleY);
+                texture.offset.set(globals.customTextureOffsetX, globals.customTextureOffsetY);
+                texture.needsUpdate = true;
+
+                if (globals.colorMode !== "customTexture") {
+                    setColorMode("customTexture"); // This will also call setMeshMaterial
+                } else {
+                    globals.model.setMeshMaterial();
+                }
+            }, undefined, function(err) {
+                globals.warn("Error loading texture: " + err);
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+
+    $('#textureScaleX').on('input change', function() {
+        var value = parseFloat($(this).val());
+        if (isNaN(value)) return;
+        globals.customTextureScaleX = value;
+        if (globals.customTextureObject) {
+            globals.customTextureObject.repeat.x = value;
+            globals.customTextureObject.needsUpdate = true;
+        }
+        if (globals.colorMode === "customTexture") {
+            globals.model.setMeshMaterial();
+        }
+    });
+    $('#textureScaleY').on('input change', function() {
+        var value = parseFloat($(this).val());
+        if (isNaN(value)) return;
+        globals.customTextureScaleY = value;
+        if (globals.customTextureObject) {
+            globals.customTextureObject.repeat.y = value;
+            globals.customTextureObject.needsUpdate = true;
+        }
+        if (globals.colorMode === "customTexture") {
+            globals.model.setMeshMaterial();
+        }
+    });
+    $('#textureOffsetX').on('input change', function() {
+        var value = parseFloat($(this).val());
+        if (isNaN(value)) return;
+        globals.customTextureOffsetX = value;
+        if (globals.customTextureObject) {
+            globals.customTextureObject.offset.x = value;
+            globals.customTextureObject.needsUpdate = true;
+        }
+        if (globals.colorMode === "customTexture") {
+            globals.model.setMeshMaterial();
+        }
+    });
+    $('#textureOffsetY').on('input change', function() {
+        var value = parseFloat($(this).val());
+        if (isNaN(value)) return;
+        globals.customTextureOffsetY = value;
+        if (globals.customTextureObject) {
+            globals.customTextureObject.offset.y = value;
+            globals.customTextureObject.needsUpdate = true;
+        }
+        if (globals.colorMode === "customTexture") {
+            globals.model.setMeshMaterial();
+        }
+    });
+
+    $('#resetTextureControls').on('click', function() {
+        globals.customTextureScaleX = 1.0;
+        globals.customTextureScaleY = 1.0;
+        globals.customTextureOffsetX = 0.0;
+        globals.customTextureOffsetY = 0.0;
+
+        $('#textureScaleX').val(globals.customTextureScaleX);
+        $('#textureScaleY').val(globals.customTextureScaleY);
+        $('#textureOffsetX').val(globals.customTextureOffsetX);
+        $('#textureOffsetY').val(globals.customTextureOffsetY);
+        
+        // Reset file input
+        $('#textureUpload').val('');
+
+
+        if (globals.customTextureObject) {
+            globals.customTextureObject.repeat.set(globals.customTextureScaleX, globals.customTextureScaleY);
+            globals.customTextureObject.offset.set(globals.customTextureOffsetX, globals.customTextureOffsetY);
+            globals.customTextureObject.needsUpdate = true;
+            // Optionally dispose and nullify texture if reset means "remove texture"
+            // globals.customTextureObject.dispose();
+            // globals.customTextureObject = null;
+        }
+        if (globals.colorMode === "customTexture") {
+            globals.model.setMeshMaterial();
+        }
+    });
+
 
     setLink("#showAdvancedOptions", function(){
         $("#basicUI").hide();
