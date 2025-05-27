@@ -116,8 +116,8 @@ function initModel(globals){
                 // Fallback to a default material if customTextureObject is null
                 material = new THREE.MeshPhongMaterial({
                     flatShading: true,
-                    side: THREE.FrontSide, // Or THREE.DoubleSide if preferred for default
-                    color: new THREE.Color("#" + globals.color1), // Default color
+                    side: THREE.FrontSide, 
+                    color: new THREE.Color("#" + globals.color2), // Default color changed to color2
                     polygonOffset: true,
                     polygonOffsetFactor: polygonOffset,
                     polygonOffsetUnits: 1
