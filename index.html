@@ -1292,6 +1292,33 @@
                         <input name="colorMode" value="customTexture" data-toggle="radio" class="custom-radio" type="radio"><span class="icons"><span class="icon-unchecked"></span><span class="icon-checked"></span></span>
                         Custom Texture
                     </label>
+                    <div id="customTextureOptions" class="indent" style="display: none; margin-left: 20px; padding-top: 5px; padding-bottom: 10px;">
+                        <div style="margin-bottom: 8px;">
+                            <label for="textureUpload" style="display: block; margin-bottom: 3px;">Texture File:</label>
+                            <input type="file" id="textureUpload" accept="image/png, image/jpeg" class="form-control" style="display: inline-block; width: auto;">
+                        </div>
+                        
+                        <label style="display: block; margin-top: 10px; margin-bottom: 3px;">Texture Mapping:</label>
+                        <div class="indent" style="margin-left: 10px;">
+                            <div class="sliderInput" id="textureScaleXControl" style="margin-bottom:5px;">
+                                <span class="label-slider" style="width:70px; display:inline-block; font-weight: normal;">Scale X : </span>
+                                <input type="number" id="textureScaleX" step="0.05" value="1.0" class="float form-control" style="width: 80px; padding: 3px; height: auto; line-height: normal;">
+                            </div>
+                            <div class="sliderInput" id="textureScaleYControl" style="margin-bottom:5px;">
+                                <span class="label-slider" style="width:70px; display:inline-block; font-weight: normal;">Scale Y : </span>
+                                <input type="number" id="textureScaleY" step="0.05" value="1.0" class="float form-control" style="width: 80px; padding: 3px; height: auto; line-height: normal;">
+                            </div>
+                            <div class="sliderInput" id="textureOffsetXControl" style="margin-bottom:5px;">
+                                <span class="label-slider" style="width:70px; display:inline-block; font-weight: normal;">Offset X : </span>
+                                <input type="number" id="textureOffsetX" step="0.05" value="0.0" class="float form-control" style="width: 80px; padding: 3px; height: auto; line-height: normal;">
+                            </div>
+                            <div class="sliderInput" id="textureOffsetYControl" style="margin-bottom:15px;">
+                                <span class="label-slider" style="width:70px; display:inline-block; font-weight: normal;">Offset Y : </span>
+                                <input type="number" id="textureOffsetY" step="0.05" value="0.0" class="float form-control" style="width: 80px; padding: 3px; height: auto; line-height: normal;">
+                            </div>
+                            <button id="resetTextureControls" class="btn btn-sm btn-default" style="padding: 4px 10px;">Reset Texture</button>
+                        </div>
+                    </div>
                 </div>
                 <br/>
             </div><br/>

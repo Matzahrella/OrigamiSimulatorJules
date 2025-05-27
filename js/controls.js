@@ -563,39 +563,51 @@ function initControls(globals){
         globals.ambientOcclusion = val;
     });
 
+    // Initial visibility setup based on globals.colorMode
     if (globals.colorMode == "color") $("#coloredMaterialOptions").show();
     else $("#coloredMaterialOptions").hide();
+
     if (globals.colorMode == "axialStrain") $("#axialStrainMaterialOptions").show();
     else $("#axialStrainMaterialOptions").hide();
-    if (globals.colorMode == "customTexture") $('#customTextureControls').show();
-    else $('#customTextureControls').hide();
+
+    if (globals.colorMode == "customTexture") $('#customTextureOptions').show(); // Changed ID
+    else $('#customTextureOptions').hide(); // Changed ID
 
     function setColorMode(val){
         globals.colorMode = val;
+
+        // Handle visibility of specific option divs
         if (val == "color") {
             $("#coloredMaterialOptions").show();
+        } else {
+            $("#coloredMaterialOptions").hide();
+        }
+
+        if (val == "axialStrain") {
+            $("#axialStrainMaterialOptions").show();
+        } else {
+            $("#axialStrainMaterialOptions").hide();
+        }
+
+        if (val == "customTexture") {
+            $("#customTextureOptions").show(); // Changed ID
+        } else {
+            $("#customTextureOptions").hide(); // Changed ID
+        }
+
+        // Handle active states for main toggles (#colorToggle, #strainToggle)
+        if (val == "color") {
             $("#colorToggle>div").addClass("active");
             $("#strainToggle>div").removeClass("active");
+        } else if (val == "axialStrain") {
+            $("#colorToggle>div").removeClass("active");
+            $("#strainToggle>div").addClass("active");
+        } else if (val == "customTexture") {
+            // When customTexture is active, neither of the main toggles should be active
+            $("#colorToggle>div").removeClass("active");
+            $("#strainToggle>div").removeClass("active");
         }
-        else { // Could be axialStrain or customTexture, or others in future
-            $("#coloredMaterialOptions").hide();
-            // Logic for specific active toggle (color vs strain)
-            if (val === "axialStrain") {
-                $("#colorToggle>div").removeClass("active");
-                $("#strainToggle>div").addClass("active");
-            } else if (val === "customTexture") {
-                // Potentially deactivate both color and strain, or have a dedicated toggle
-                // For now, let's assume it deactivates both if they are separate toggles
-                $("#colorToggle>div").removeClass("active");
-                $("#strainToggle>div").removeClass("active");
-            }
-        }
-
-        if (val == "axialStrain") $("#axialStrainMaterialOptions").show();
-        else $("#axialStrainMaterialOptions").hide();
-
-        if (val == "customTexture") $('#customTextureControls').show();
-        else $('#customTextureControls').hide();
+        // If other modes are added in the future, their toggle logic would go here
 
         $(".radio>input[value="+val+"]").prop("checked", true);
         globals.model.setMeshMaterial();
